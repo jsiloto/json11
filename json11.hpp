@@ -204,9 +204,40 @@ public:
     typedef std::initializer_list<std::pair<std::string, Type>> shape;
     bool has_shape(const shape & types, std::string & err) const;
 
+    template<typename T>
+    T AsType() const;
+
 private:
     std::shared_ptr<JsonValue> m_ptr;
 };
+
+/* * * * * * * * * * * * * * * * * * * *
+ *  AsType Template Specialization
+ */
+template<> inline  Json::array Json::AsType<typename Json::array>() const {
+    return array_items();
+}
+
+template<> inline  Json::object Json::AsType<typename Json::object>() const {
+    return object_items();
+}
+
+template<> inline  bool Json::AsType<bool>() const {
+    return bool_value();
+}
+
+template<> inline  double Json::AsType<double>() const {
+    return number_value();
+}
+
+template<> inline  std::string Json::AsType<typename std::string>() const {
+    return string_value();
+}
+
+template<> inline Json Json::AsType<Json>() const {
+    return Json(*this);
+}
+
 
 // Internal class hierarchy - JsonValue objects are not exposed to users of this API.
 class JsonValue {
