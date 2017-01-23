@@ -1,3 +1,9 @@
+*.o
+*.gcda
+*.gcno
+.deps/
+.dirstamp
+
 # generated files
 test
 libjson11.a
