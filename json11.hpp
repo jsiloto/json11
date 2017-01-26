@@ -92,6 +92,7 @@ public:
     Json(std::nullptr_t) noexcept;  // NUL
     Json(double value);             // NUMBER
     Json(int value);                // NUMBER
+    Json(unsigned long int value);  // NUMBER
     Json(bool value);               // BOOL
     Json(const std::string &value); // STRING
     Json(std::string &&value);      // STRING
@@ -207,6 +208,16 @@ public:
     template<typename T>
     T AsType() const;
 
+    template<typename T>
+    std::vector<T> AsVector() const{
+      std::vector<T> v;
+      for(auto& a: array_items()){
+        v.push_back(a.AsType<T>());
+      }
+      return std::move(v);
+    }
+
+
 private:
     std::shared_ptr<JsonValue> m_ptr;
 };
@@ -214,6 +225,11 @@ private:
 /* * * * * * * * * * * * * * * * * * * *
  *  AsType Template Specialization
  */
+
+template<> inline  std::vector<unsigned long> Json::AsType<typename std::vector<unsigned long>>() const {
+    return std::move(AsVector<unsigned long>());
+}
+
 template<> inline  Json::array Json::AsType<typename Json::array>() const {
     return array_items();
 }
@@ -229,6 +245,11 @@ template<> inline  bool Json::AsType<bool>() const {
 template<> inline  double Json::AsType<double>() const {
     return number_value();
 }
+
+template<> inline  unsigned long Json::AsType<unsigned long>() const {
+    return int_value();
+}
+
 
 template<> inline  std::string Json::AsType<typename std::string>() const {
     return string_value();
