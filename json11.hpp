@@ -229,6 +229,9 @@ private:
 template<> inline  std::vector<unsigned long> Json::AsType<typename std::vector<unsigned long>>() const {
     return std::move(AsVector<unsigned long>());
 }
+template<> inline  std::vector<std::string> Json::AsType<typename std::vector<std::string>>() const {
+    return std::move(AsVector<std::string>());
+}
 
 template<> inline  Json::array Json::AsType<typename Json::array>() const {
     return array_items();
