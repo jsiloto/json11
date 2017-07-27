@@ -57,30 +57,37 @@
 #include <initializer_list>
 
 #ifdef _MSC_VER
-    #if _MSC_VER <= 1800 // VS 2013
-        #ifndef noexcept
-            #define noexcept throw()
-        #endif
+#if _MSC_VER <= 1800 // VS 2013
+#ifndef noexcept
+#define noexcept throw()
+#endif
 
-        #ifndef snprintf
-            #define snprintf _snprintf_s
-        #endif
-    #endif
+#ifndef snprintf
+#define snprintf _snprintf_s
+#endif
+#endif
 #endif
 
 namespace json11 {
 
 enum JsonParse {
-    STANDARD, COMMENTS
+  STANDARD,
+  COMMENTS
 };
 
 class JsonValue;
 
-class Json final {
-public:
+class Json
+final {
+   public:
     // Types
     enum Type {
-        NUL, NUMBER, BOOL, STRING, ARRAY, OBJECT
+      NUL,
+      NUMBER,
+      BOOL,
+      STRING,
+      ARRAY,
+      OBJECT
     };
 
     // Array and object typedefs
@@ -94,7 +101,7 @@ public:
     Json(int value);                // NUMBER
     Json(unsigned long int value);  // NUMBER
     Json(bool value);               // BOOL
-    Json(const std::string &value); // STRING
+    Json(const std::string &value);  // STRING
     Json(std::string &&value);      // STRING
     Json(const char * value);       // STRING
     Json(const array &values);      // ARRAY
@@ -103,21 +110,25 @@ public:
     Json(object &&values);          // OBJECT
 
     // Implicit constructor: anything with a to_json() function.
-    template <class T, class = decltype(&T::to_json)>
-    Json(const T & t) : Json(t.to_json()) {}
+    template<class T, class = decltype(&T::to_json)>
+    Json(const T & t)
+        : Json(t.to_json()) {
+    }
 
     // Implicit constructor: map-like objects (std::map, std::unordered_map, etc)
-    template <class M, typename std::enable_if<
+    template<class M, typename std::enable_if<
         std::is_constructible<std::string, typename M::key_type>::value
-        && std::is_constructible<Json, typename M::mapped_type>::value,
-            int>::type = 0>
-    Json(const M & m) : Json(object(m.begin(), m.end())) {}
+            && std::is_constructible<Json, typename M::mapped_type>::value, int>::type = 0>
+    Json(const M & m)
+        : Json(object(m.begin(), m.end())) {
+    }
 
     // Implicit constructor: vector-like objects (std::list, std::vector, std::set, etc)
-    template <class V, typename std::enable_if<
-        std::is_constructible<Json, typename V::value_type>::value,
-            int>::type = 0>
-    Json(const V & v) : Json(array(v.begin(), v.end())) {}
+    template<class V, typename std::enable_if<
+        std::is_constructible<Json, typename V::value_type>::value, int>::type = 0>
+    Json(const V & v)
+        : Json(array(v.begin(), v.end())) {
+    }
 
     // This prevents Json(some_pointer) from accidentally producing a bool. Use
     // Json(bool(some_pointer)) if that behavior is desired.
@@ -126,12 +137,24 @@ public:
     // Accessors
     Type type() const;
 
-    bool is_null()   const { return type() == NUL; }
-    bool is_number() const { return type() == NUMBER; }
-    bool is_bool()   const { return type() == BOOL; }
-    bool is_string() const { return type() == STRING; }
-    bool is_array()  const { return type() == ARRAY; }
-    bool is_object() const { return type() == OBJECT; }
+    bool is_null() const {
+      return type() == NUL;
+    }
+    bool is_number() const {
+      return type() == NUMBER;
+    }
+    bool is_bool() const {
+      return type() == BOOL;
+    }
+    bool is_string() const {
+      return type() == STRING;
+    }
+    bool is_array() const {
+      return type() == ARRAY;
+    }
+    bool is_object() const {
+      return type() == OBJECT;
+    }
 
     // Return the enclosed value if this is a number, 0 otherwise. Note that json11 does not
     // distinguish between integer and non-integer numbers - number_value() and int_value()
@@ -156,46 +179,49 @@ public:
     // Serialize.
     void dump(std::string &out) const;
     std::string dump() const {
-        std::string out;
-        dump(out);
-        return out;
+      std::string out;
+      dump(out);
+      return out;
     }
 
     // Parse. If parse fails, return Json() and assign an error message to err.
-    static Json parse(const std::string & in,
-                      std::string & err,
-                      JsonParse strategy = JsonParse::STANDARD);
-    static Json parse(const char * in,
-                      std::string & err,
+    static Json parse(const std::string & in, std::string & err, JsonParse strategy =
+                          JsonParse::STANDARD);
+    static Json parse(const char * in, std::string & err,
                       JsonParse strategy = JsonParse::STANDARD) {
-        if (in) {
-            return parse(std::string(in), err, strategy);
-        } else {
-            err = "null input";
-            return nullptr;
-        }
+      if (in) {
+        return parse(std::string(in), err, strategy);
+      } else {
+        err = "null input";
+        return nullptr;
+      }
     }
     // Parse multiple objects, concatenated or separated by whitespace
-    static std::vector<Json> parse_multi(
-        const std::string & in,
-        std::string::size_type & parser_stop_pos,
-        std::string & err,
-        JsonParse strategy = JsonParse::STANDARD);
+    static std::vector<Json> parse_multi(const std::string & in,
+                                         std::string::size_type & parser_stop_pos,
+                                         std::string & err,
+                                         JsonParse strategy = JsonParse::STANDARD);
 
-    static inline std::vector<Json> parse_multi(
-        const std::string & in,
-        std::string & err,
-        JsonParse strategy = JsonParse::STANDARD) {
-        std::string::size_type parser_stop_pos;
-        return parse_multi(in, parser_stop_pos, err, strategy);
+    static inline std::vector<Json> parse_multi(const std::string & in, std::string & err,
+                                                JsonParse strategy = JsonParse::STANDARD) {
+      std::string::size_type parser_stop_pos;
+      return parse_multi(in, parser_stop_pos, err, strategy);
     }
 
-    bool operator== (const Json &rhs) const;
-    bool operator<  (const Json &rhs) const;
-    bool operator!= (const Json &rhs) const { return !(*this == rhs); }
-    bool operator<= (const Json &rhs) const { return !(rhs < *this); }
-    bool operator>  (const Json &rhs) const { return  (rhs < *this); }
-    bool operator>= (const Json &rhs) const { return !(*this < rhs); }
+    bool operator==(const Json &rhs) const;
+    bool operator<(const Json &rhs) const;
+    bool operator!=(const Json &rhs) const {
+      return !(*this == rhs);
+    }
+    bool operator<=(const Json &rhs) const {
+      return !(rhs < *this);
+    }
+    bool operator>(const Json &rhs) const {
+      return (rhs < *this);
+    }
+    bool operator>=(const Json &rhs) const {
+      return !(*this < rhs);
+    }
 
     /* has_shape(types, err)
      *
@@ -209,63 +235,77 @@ public:
     T AsType() const;
 
     template<typename T>
-    std::vector<T> AsVector() const{
+    std::vector<T> AsVector() const {
       std::vector<T> v;
-      for(auto& a: array_items()){
+      for (auto& a : array_items()) {
         v.push_back(a.AsType<T>());
       }
       return std::move(v);
     }
 
-
-private:
+   private:
     std::shared_ptr<JsonValue> m_ptr;
-};
+  };
 
-/* * * * * * * * * * * * * * * * * * * *
- *  AsType Template Specialization
- */
+  /* * * * * * * * * * * * * * * * * * * *
+   *  AsType Template Specialization
+   */
 
-template<> inline  std::vector<unsigned long> Json::AsType<typename std::vector<unsigned long>>() const {
+  template<> inline std::vector<unsigned long> Json::AsType<typename std::vector<unsigned long>>() const {
     return std::move(AsVector<unsigned long>());
-}
-template<> inline  std::vector<std::string> Json::AsType<typename std::vector<std::string>>() const {
+  }
+
+  template<> inline std::vector<unsigned int> Json::AsType<typename std::vector<unsigned int>>() const {
+    return std::move(AsVector<unsigned int>());
+  }
+
+  template<> inline std::vector<std::string> Json::AsType<typename std::vector<std::string>>() const {
     return std::move(AsVector<std::string>());
-}
+  }
 
-template<> inline  Json::array Json::AsType<typename Json::array>() const {
+  template<> inline Json::array Json::AsType<typename Json::array>() const {
     return array_items();
-}
+  }
 
-template<> inline  Json::object Json::AsType<typename Json::object>() const {
+  template<> inline Json::object Json::AsType<typename Json::object>() const {
     return object_items();
-}
+  }
 
-template<> inline  bool Json::AsType<bool>() const {
+  template<> inline bool Json::AsType<bool>() const {
     return bool_value();
-}
+  }
 
-template<> inline  double Json::AsType<double>() const {
+  template<> inline double Json::AsType<double>() const {
     return number_value();
-}
+  }
 
-template<> inline  unsigned long Json::AsType<unsigned long>() const {
+  template<> inline float Json::AsType<float>() const {
+    return number_value();
+  }
+
+  template<> inline int Json::AsType<int>() const {
     return int_value();
-}
+  }
 
+  template<> inline unsigned int Json::AsType<unsigned int>() const {
+    return int_value();
+  }
 
-template<> inline  std::string Json::AsType<typename std::string>() const {
+  template<> inline unsigned long Json::AsType<unsigned long>() const {
+    return int_value();
+  }
+
+  template<> inline std::string Json::AsType<typename std::string>() const {
     return string_value();
-}
+  }
 
-template<> inline Json Json::AsType<Json>() const {
+  template<> inline Json Json::AsType<Json>() const {
     return Json(*this);
-}
-
+  }
 
 // Internal class hierarchy - JsonValue objects are not exposed to users of this API.
-class JsonValue {
-protected:
+  class JsonValue {
+   protected:
     friend class Json;
     friend class JsonInt;
     friend class JsonDouble;
@@ -281,7 +321,8 @@ protected:
     virtual const Json &operator[](size_t i) const;
     virtual const Json::object &object_items() const;
     virtual const Json &operator[](const std::string &key) const;
-    virtual ~JsonValue() {}
-};
+    virtual ~JsonValue() {
+    }
+  };
 
-} // namespace json11
+  }  // namespace json11
