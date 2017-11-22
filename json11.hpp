@@ -100,6 +100,7 @@ final {
     Json(double value);             // NUMBER
     Json(int value);                // NUMBER
     Json(unsigned long int value);  // NUMBER
+    Json(unsigned int value);       // NUMBER
     Json(bool value);               // BOOL
     Json(const std::string &value);  // STRING
     Json(std::string &&value);      // STRING

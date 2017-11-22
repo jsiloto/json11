@@ -318,6 +318,9 @@ Json::Json(int value)
 Json::Json(unsigned long value)
     : m_ptr(make_shared < JsonInt > (value)) {
 }
+Json::Json(unsigned int value)
+    : m_ptr(make_shared < JsonInt > (value)) {
+}
 Json::Json(bool value)
     : m_ptr(value ? statics().t : statics().f) {
 }
